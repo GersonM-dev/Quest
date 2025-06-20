@@ -49,41 +49,131 @@
             </div>
             <canvas id="leaderboardChart" height="260"></canvas>
         </div>
+
+        {{-- Leaderboard Table with Badges --}}
+        <div class="mt-6">
+            <table class="min-w-full border rounded-xl overflow-hidden">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-2 px-4 text-left">#</th>
+                        <th class="py-2 px-4 text-left">Nama</th>
+                        <th class="py-2 px-4 text-left">Poin</th>
+                        <th class="py-2 px-4 text-left">Badge</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($leaderboard as $i => $user)
+                        @php
+                            $badge = 'Bronze';
+                            $badgeColor = 'bg-yellow-400 text-yellow-900';
+                            if ($user->score >= 100) {
+                                $badge = 'Silver';
+                                $badgeColor = 'bg-gray-300 text-gray-800';
+                            }
+                            if ($user->score >= 200) {
+                                $badge = 'Gold';
+                                $badgeColor = 'bg-yellow-500 text-yellow-900';
+                            }
+                            if ($user->score >= 300) {
+                                $badge = 'Master';
+                                $badgeColor = 'bg-blue-400 text-blue-900';
+                            }
+                            if ($user->score >= 400) {
+                                $badge = 'Champion';
+                                $badgeColor = 'bg-red-500 text-white';
+                            }
+                        @endphp
+                        <tr class="{{ $i % 2 ? 'bg-white' : 'bg-gray-50' }}">
+                            <td class="py-2 px-4">{{ $i + 1 }}</td>
+                            <td class="py-2 px-4">{{ $user->name }}</td>
+                            <td class="py-2 px-4">{{ $user->score }}</td>
+                            <td class="py-2 px-4">
+                                <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold {{ $badgeColor }}">
+                                    {{ $badge }}
+                                </span>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
     </div>
 @endsection
 
 @section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const ctx = document.getElementById('leaderboardChart').getContext('2d');
-    const data = {
-        labels: @json($leaderboard->pluck('name')),
-        datasets: [{
-            label: 'Points',
-            data: @json($leaderboard->pluck('score')),
-            backgroundColor: [
-                '#2563eb', '#16a34a', '#eab308', '#ef4444', '#0ea5e9'
-            ],
-            borderWidth: 1
-        }]
-    };
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctx = document.getElementById('leaderboardChart').getContext('2d');
+            const labels = @json($leaderboard->pluck('name'));
+            const scores = @json($leaderboard->pluck('score'));
 
-    new Chart(ctx, {
-        type: 'bar', // vertical bar (default)
-        data: data,
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    precision: 0
+            // Determine badge icon per score
+            const getBadgeEmoji = (score) => {
+                if (score >= 400) return '🏆';      // Champion
+                if (score >= 300) return '👑';      // Master
+                if (score >= 200) return '🥇';      // Gold
+                if (score >= 100) return '🥈';      // Silver
+                return '🥉';                        // Bronze
+            };
+            const badgeEmojis = scores.map(getBadgeEmoji);
+
+            // Chart.js plugin to draw badge icon above each bar
+            const badgePlugin = {
+                id: 'badgePlugin',
+                afterDatasetDraw(chart, args, options) {
+                    const { ctx, chartArea: { top }, scales: { x, y } } = chart;
+                    chart.getDatasetMeta(0).data.forEach((bar, idx) => {
+                        const badge = badgeEmojis[idx];
+                        const barCenter = bar.x;
+                        const barTop = bar.y - 16;
+                        ctx.save();
+                        ctx.font = "28px serif";
+                        ctx.textAlign = "center";
+                        ctx.fillText(badge, barCenter, barTop);
+                        ctx.restore();
+                    });
                 }
-            },
-            plugins: {
-                legend: { display: false }
-            }
-        }
-    });
-});
-</script>
+            };
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Points',
+                        data: scores,
+                        backgroundColor: [
+                            '#2563eb', '#16a34a', '#eab308', '#ef4444', '#0ea5e9'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true, precision: 0 }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const score = context.parsed.y;
+                                    let badge = '🥉';
+                                    if (score >= 100) badge = '🥈';
+                                    if (score >= 200) badge = '🥇';
+                                    if (score >= 300) badge = '👑';
+                                    if (score >= 400) badge = '🏆';
+                                    return context.dataset.label + ': ' + score + ' ' + badge;
+                                }
+                            }
+                        }
+                    }
+                },
+                plugins: [badgePlugin]
+            });
+        });
+    </script>
+
 @endsection
