@@ -27,7 +27,8 @@ Route::get('/quiz/result', [QuizController::class, 'result'])->name('quiz.result
 
 Route::get('/quiz/history', [QuizController::class, 'history'])->name('quiz.history');
 Route::get('/quiz/my-quizzes', [QuizController::class, 'myQuizzes'])->name('quiz.my-quizzes');
+Route::get('/quiz/detail/{id}', [QuizController::class, 'quizDetail'])->name('quiz.detail');
 
 
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
