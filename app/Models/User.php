@@ -3,14 +3,30 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
+use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
+
+    /**
+     * Determine if the user can access the Filament panel.
+     *
+     * @param \Filament\Panel $panel
+     * @return bool
+     */
+    public function canAccessPanel(\Filament\Panel $panel): bool
+    {
+        // Allow all users to access the panel; adjust logic as needed.
+        return true;
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -23,6 +39,8 @@ class User extends Authenticatable
         'password',
         'kelas',
         'no_absen',
+        'avatar_url',
+        'jabatan',
     ];
 
     /**
@@ -61,6 +79,11 @@ class User extends Authenticatable
     public function leaderboard()
     {
         return $this->hasOne(Leaderboard::class);
+    }
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return $this->avatar_url ? Storage::url($this->avatar_url) : null;
     }
 
 }
