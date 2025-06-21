@@ -143,7 +143,7 @@ class QuizController extends Controller
         // Update or create leaderboard
         \App\Models\Leaderboard::updateOrCreate(
             ['user_id' => $userId],
-            ['score' => \DB::raw("GREATEST(score, $score)")] // Keep max score, or use "+=" to accumulate
+            ['score' => \DB::raw("score + $score")]
         );
 
         Session::forget('quiz');
