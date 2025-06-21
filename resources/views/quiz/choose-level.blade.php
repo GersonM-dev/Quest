@@ -4,6 +4,22 @@
     <h1 class="text-2xl font-bold text-center">Pilih Level Quiz</h1>
     <form action="{{ route('quiz.start') }}" method="POST" class="space-y-4">
         @csrf
+
+        {{-- Radio: Pretest / Posttest --}}
+        <div>
+            <label class="block font-semibold mb-2">Jenis Test:</label>
+            <div class="flex items-center space-x-6">
+                <label class="flex items-center">
+                    <input type="radio" name="test_type" value="pretest" required class="accent-blue-600">
+                    <span class="ml-2">Pretest</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="radio" name="test_type" value="posttest" required class="accent-blue-600">
+                    <span class="ml-2">Posttest</span>
+                </label>
+            </div>
+        </div>
+
         <select name="level" required class="block w-full p-2 border rounded">
             <option value="">Pilih Level</option>
             <option value="1">Level 1</option>

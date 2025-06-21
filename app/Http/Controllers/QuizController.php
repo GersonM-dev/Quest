@@ -17,20 +17,28 @@ class QuizController extends Controller
     public function start(Request $request)
     {
         $request->validate([
-            'level' => 'required|in:1,2,3,4'
+            'level' => 'required|in:1,2,3,4',
+            'test_type' => 'required|in:pretest,posttest',
         ]);
         // Get 10 random questions for chosen level
         $answeredQuestionIds = \App\Models\UserAnswer::where('user_id', auth()->id())->pluck('question_id')->toArray();
-        $questions = Question::with('answers')
+        $questionsQuery = Question::with('answers')
             ->where('level', $request->level)
-            ->whereNotIn('id', $answeredQuestionIds)
-            ->inRandomOrder()
-            ->take(10)
-            ->get();
+            ->whereNotIn('id', $answeredQuestionIds);
+
+        // Add condition for pretest or posttest
+        if ($request->test_type === 'pretest') {
+            $questionsQuery->where('is_pretest', true);
+        } elseif ($request->test_type === 'posttest') {
+            $questionsQuery->where('is_posttest', true);
+        }
+
+        $questions = $questionsQuery->inRandomOrder()->take(10)->get();
 
         // Store questions and progress in session
         Session::put('quiz', [
             'level' => $request->level,
+            'test_type' => $request->test_type,
             'questions' => $questions->pluck('id')->toArray(),
             'current' => 0,
             'score' => 0,

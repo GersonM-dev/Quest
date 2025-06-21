@@ -35,6 +35,16 @@ class QuestionResource extends Resource
                     ])
                     ->required(),
 
+                Forms\Components\Toggle::make('is_pretest')
+                    ->label('Pretest')
+                    ->helperText('Tandai jika pertanyaan ini untuk pretest')
+                    ->default(false),
+
+                Forms\Components\Toggle::make('is_posttest')
+                    ->label('Posttest')
+                    ->helperText('Tandai jika pertanyaan ini untuk posttest')
+                    ->default(false),
+
                 Forms\Components\TextInput::make('points')
                     ->label('Point')
                     ->numeric()
