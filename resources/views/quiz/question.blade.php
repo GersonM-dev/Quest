@@ -1,30 +1,56 @@
 @extends('layouts.app')
 @section('content')
-<div class="max-w-xl mx-auto mt-10 bg-white p-6 rounded-xl shadow">
-    {{-- Progress Bar --}}
-    @php
-        $progress = (($quiz['current']+1) / $quiz['max']) * 100;
-    @endphp
-    <div class="w-full bg-gray-200 rounded-full h-4 mb-4">
-        <div class="bg-blue-600 h-4 rounded-full transition-all duration-300" style="width: {{ $progress }}%"></div>
-    </div>
-    <div class="mb-2 text-gray-700 text-sm">Soal {{ $quiz['current']+1 }} dari {{ $quiz['max'] }}</div>
-    <div class="text-xl font-semibold mb-6">{{ $question->question }}</div>
+<div class="relative min-h-[70vh] flex flex-col items-center justify-center animate-fade-in-up">
 
-    <form id="quiz-form">
-        @csrf
-        <div class="space-y-3">
-            @foreach($question->answers as $ans)
-                <label class="block">
-                    <input type="radio" name="answer_id" value="{{ $ans->id }}" class="mr-2">
-                    {{ $ans->answer }}
-                </label>
-            @endforeach
+    <div class="w-full max-w-xl bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-2xl border border-blue-100">
+
+        {{-- Progress Bar --}}
+        @php
+            $progress = (($quiz['current']+1) / $quiz['max']) * 100;
+        @endphp
+        <div class="mb-5">
+            <div class="w-full bg-gradient-to-r from-blue-100 via-blue-200 to-blue-100 rounded-full h-5 relative overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-500 to-sky-400 h-5 rounded-full shadow-inner transition-all duration-500" style="width: {{ $progress }}%"></div>
+                <div class="absolute inset-0 flex justify-center items-center text-sm font-semibold text-blue-700">{{ round($progress) }}%</div>
+            </div>
+            <div class="mt-2 text-gray-700 text-sm text-center tracking-wide">Soal <span class="font-semibold text-blue-600">{{ $quiz['current']+1 }}</span> dari <span class="font-semibold">{{ $quiz['max'] }}</span></div>
         </div>
-        <button type="submit" class="mt-6 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Kirim Jawaban</button>
-    </form>
+
+        <div class="text-xl font-bold text-blue-800 mb-7 text-center animate-pop">{{ $question->question }}</div>
+
+        <form id="quiz-form">
+            @csrf
+            <div class="space-y-4">
+                @foreach($question->answers as $ans)
+                    <label class="block cursor-pointer group transition">
+                        <input type="radio" name="answer_id" value="{{ $ans->id }}" class="peer hidden">
+                        <div class="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 transition-all duration-200 group-hover:border-blue-400 peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 peer-checked:shadow-lg">
+                            <span class="text-base font-medium">{{ $ans->answer }}</span>
+                        </div>
+                    </label>
+                @endforeach
+            </div>
+            <button type="submit" class="mt-7 w-full py-3 rounded-xl bg-gradient-to-tr from-blue-500 to-sky-400 text-white font-bold shadow-lg hover:from-blue-600 hover:to-sky-500 transition transform hover:-translate-y-1 text-lg">Kirim Jawaban</button>
+        </form>
+    </div>
 </div>
 
+<style>
+@keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(32px);}
+    to   { opacity: 1; transform: translateY(0);}
+}
+.animate-fade-in-up { animation: fade-in-up 0.7s cubic-bezier(.48,1.68,.38,.98) both; }
+@keyframes pop {
+    0% { transform: scale(0.95);}
+    60% { transform: scale(1.03);}
+    100% { transform: scale(1);}
+}
+.animate-pop { animation: pop 0.6s cubic-bezier(.34,1.56,.64,1) both;}
+</style>
+@endsection
+
+@section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.getElementById('quiz-form').addEventListener('submit', function(e) {
@@ -33,7 +59,11 @@ document.getElementById('quiz-form').addEventListener('submit', function(e) {
     let answer_id = form.answer_id.value;
 
     if (!answer_id) {
-        Swal.fire('Pilih salah satu jawaban!');
+        Swal.fire({
+            title: 'Pilih salah satu jawaban!',
+            icon: 'warning',
+            confirmButtonColor: '#2563eb'
+        });
         return;
     }
 
@@ -48,7 +78,7 @@ document.getElementById('quiz-form').addEventListener('submit', function(e) {
             title: data.status === 'correct' ? 'Benar!' : 'Salah!',
             text: data.message,
             icon: data.status === 'correct' ? 'success' : 'error',
-            showConfirmButton: true
+            confirmButtonColor: '#2563eb'
         }).then(() => {
             window.location.href = "{{ route('quiz.question') }}";
         });
