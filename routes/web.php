@@ -25,5 +25,8 @@ Route::get('/quiz/question', [QuizController::class, 'showQuestion'])->name('qui
 Route::post('/quiz/answer', [QuizController::class, 'submitAnswer'])->name('quiz.answer');
 Route::get('/quiz/result', [QuizController::class, 'result'])->name('quiz.result');
 
+Route::get('/quiz/history', [QuizController::class, 'history'])->name('quiz.history');
+
+
 
 require __DIR__.'/auth.php';

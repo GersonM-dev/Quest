@@ -74,6 +74,15 @@ class QuizController extends Controller
 
         $point = $question->points;
 
+        // SAVE THE ANSWER
+        \App\Models\UserAnswer::create([
+            'user_id' => auth()->id(),
+            'question_id' => $question->id,
+            'answer_id' => $request->answer_id,
+            'is_correct' => $isCorrect,
+            'answered_at' => now(),
+        ]);
+
         if ($isCorrect) {
             $quiz['score'] += $point;
             $result = [
@@ -98,6 +107,7 @@ class QuizController extends Controller
         return response()->json($result);
     }
 
+
     public function result()
     {
         $quiz = Session::get('quiz');
@@ -115,6 +125,18 @@ class QuizController extends Controller
 
         Session::forget('quiz');
         return view('quiz.result', compact('score'));
+    }
+    public function history()
+    {
+        $user = auth()->user();
+
+        // Load user's answer history with question and answer relation
+        $answers = \App\Models\UserAnswer::with(['question', 'answer'])
+            ->where('user_id', $user->id)
+            ->orderByDesc('answered_at')
+            ->get();
+
+        return view('quiz.history', compact('answers'));
     }
 
 }
