@@ -34,22 +34,22 @@
                 @php
                     // Example thresholds, adjust as needed:
                     $badgeTier = 1;
-                    $badgeName = 'Tier 1';
+                    $badgeName = 'Bronze';
                     if ($myPoint >= 100) {
                         $badgeTier = 2;
-                        $badgeName = 'Tier 2';
+                        $badgeName = 'Silver';
                     }
                     if ($myPoint >= 200) {
                         $badgeTier = 3;
-                        $badgeName = 'Tier 3';
+                        $badgeName = 'Gold';
                     }
                     if ($myPoint >= 300) {
                         $badgeTier = 4;
-                        $badgeName = 'Tier 4';
+                        $badgeName = 'Master';
                     }
                     if ($myPoint >= 400) {
                         $badgeTier = 5;
-                        $badgeName = 'Tier 5';
+                        $badgeName = 'Platinum';
                     }
                     $badgeImages = [
                         1 => asset('badges/tier1.png'), // Change to your own badge images!
