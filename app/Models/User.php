@@ -86,4 +86,15 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         return $this->avatar_url ? Storage::url($this->avatar_url) : null;
     }
 
+    public function getProfilePhotoUrlAttribute()
+    {
+        // Use uploaded file if available
+        if ($this->avatar_url) {
+            return Storage::url($this->avatar_url);
+        }
+        // Fallback: use UI Avatars based on name
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=0D8ABC&color=fff';
+    }
+
+
 }
