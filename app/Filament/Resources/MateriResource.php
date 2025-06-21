@@ -17,7 +17,7 @@ class MateriResource extends Resource
 {
     protected static ?string $model = Materi::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-book-open';
 
     protected static ?string $pluralLabel = 'Materi';
 
@@ -26,17 +26,27 @@ class MateriResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('title')
+                    ->label('Judul Materi')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\DatePicker::make('date')
+                    ->label('Tanggal Materi')
                     ->required(),
                 Forms\Components\Textarea::make('deskripsi')
+                    ->label('Deskripsi Materi')
                     ->required()
                     ->columnSpan('full'),
                 Forms\Components\FileUpload::make('file_path')
+                    ->label('Upload File')
                     ->required()
                     ->acceptedFileTypes(['application/pdf'])
-                    ->maxSize(10240), // max 10MB
+                    ->maxSize(10240) // max 10MB
+                    ->getUploadedFileNameForStorageUsing(function ($file, $livewire) {
+                        $title = $livewire->data['title'] ?? 'file';
+                        $slug = \Str::slug($title);
+                        $extension = $file->getClientOriginalExtension();
+                        return "{$slug}.{$extension}";
+                    }),
             ]);
     }
 
@@ -44,9 +54,9 @@ class MateriResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')->label('Title')->searchable(),
+                Tables\Columns\TextColumn::make('title')->label('Judul Materi')->searchable(),
                 Tables\Columns\TextColumn::make('deskripsi')->label('Deskripsi')->limit(50),
-                Tables\Columns\TextColumn::make('date')->label('Date'),
+                Tables\Columns\TextColumn::make('date')->label('Tanggal Materi')->date(),
             ])
             ->filters([
                 //
@@ -72,8 +82,8 @@ class MateriResource extends Resource
     {
         return [
             'index' => Pages\ListMateris::route('/'),
-            'create' => Pages\CreateMateri::route('/create'),
-            'edit' => Pages\EditMateri::route('/{record}/edit'),
+            // 'create' => Pages\CreateMateri::route('/create'),
+            // 'edit' => Pages\EditMateri::route('/{record}/edit'),
         ];
     }
 }

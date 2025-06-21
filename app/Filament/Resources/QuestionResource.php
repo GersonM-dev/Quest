@@ -35,6 +35,13 @@ class QuestionResource extends Resource
                     ])
                     ->required(),
 
+                Forms\Components\TextInput::make('points')
+                    ->label('Point')
+                    ->numeric()
+                    ->default(1)
+                    ->minValue(1)
+                    ->required(),
+
                 Forms\Components\Toggle::make('is_pretest')
                     ->label('Pretest')
                     ->helperText('Tandai jika pertanyaan ini untuk pretest')
@@ -44,13 +51,6 @@ class QuestionResource extends Resource
                     ->label('Posttest')
                     ->helperText('Tandai jika pertanyaan ini untuk posttest')
                     ->default(false),
-
-                Forms\Components\TextInput::make('points')
-                    ->label('Point')
-                    ->numeric()
-                    ->default(1)
-                    ->minValue(1)
-                    ->required(),
 
                 Forms\Components\Textarea::make('question')
                     ->label('Pertanyaan')
@@ -73,9 +73,13 @@ class QuestionResource extends Resource
                             ->label('Benar?')
                             ->required(),
                     ])
+                    ->grid(2)
                     ->columnSpanFull()
                     ->required()
-                    ->helperText('Isi 2-4 jawaban, tandai mana yang benar.'),
+                    ->collapsible()
+                    ->addActionLabel('Tambah Jawaban')
+                    ->helperText('Isi 2-4 jawaban, tandai mana yang benar.')
+                    ->itemLabel(fn (array $state): ?string => $state['answer'] ?? null),
             ]);
     }
 
@@ -83,9 +87,9 @@ class QuestionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('question')->limit(60)->searchable(),
-                Tables\Columns\TextColumn::make('points'),
-                Tables\Columns\TextColumn::make('level')
+                Tables\Columns\TextColumn::make('question')->limit(60)->searchable()->label('Pertanyaan'),
+                Tables\Columns\TextColumn::make('points')->label('Nilai')->numeric(),
+                Tables\Columns\TextColumn::make('level')->label('Level')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         '1' => 'success',
@@ -116,8 +120,8 @@ class QuestionResource extends Resource
     {
         return [
             'index' => Pages\ListQuestions::route('/'),
-            'create' => Pages\CreateQuestion::route('/create'),
-            'edit' => Pages\EditQuestion::route('/{record}/edit'),
+            // 'create' => Pages\CreateQuestion::route('/create'),
+            // 'edit' => Pages\EditQuestion::route('/{record}/edit'),
         ];
     }
 }
