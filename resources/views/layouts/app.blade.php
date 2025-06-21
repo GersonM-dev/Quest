@@ -57,6 +57,16 @@
             <span>Home</span>
         </a>
 
+        <a href="{{ route('materi.index') }}"
+            class="flex flex-col items-center gap-1 {{ request()->is('materi') ? 'text-indigo-500' : 'text-gray-400' }} transition duration-100 hover:text-gray-500 active:text-gray-600">
+            <!-- Book Icon -->
+            <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+                <path d="M4 4.5A2.5 2.5 0 016.5 7H20v13H6.5A2.5 2.5 0 014 17.5v-13z" />
+            </svg>
+            <span>Materi</span>
+        </a>
+
         <a href="{{ route('quiz.my-quizzes') }}"
             class="flex flex-col items-center gap-1 {{ request()->is('quiz/my-quizzes') ? 'text-indigo-500' : 'text-gray-400' }} transition duration-100 hover:text-gray-500 active:text-gray-600">
             <!-- History Icon -->

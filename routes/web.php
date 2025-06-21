@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\QuizController;
+use App\Http\Controllers\MateriController;
 use App\Http\Controllers\ProfileController;
 
 Route::get('/', function () {
@@ -28,6 +29,9 @@ Route::get('/quiz/result', [QuizController::class, 'result'])->name('quiz.result
 Route::get('/quiz/history', [QuizController::class, 'history'])->name('quiz.history');
 Route::get('/quiz/my-quizzes', [QuizController::class, 'myQuizzes'])->name('quiz.my-quizzes');
 Route::get('/quiz/detail/{id}', [QuizController::class, 'quizDetail'])->name('quiz.detail');
+
+Route::get('/materi', [MateriController::class, 'index'])->name('materi.index');
+
 
 
 
