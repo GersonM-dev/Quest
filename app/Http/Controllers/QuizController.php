@@ -168,5 +168,14 @@ class QuizController extends Controller
         return view('quiz.my-quizzes', compact('quizzes'));
     }
 
+    public function quizDetail($id)
+    {
+        $quiz = \App\Models\Quiz::with(['userAnswers.question', 'userAnswers.answer'])
+            ->where('id', $id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
+        return view('quiz.detail', compact('quiz'));
+    }
 
 }
