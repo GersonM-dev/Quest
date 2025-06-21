@@ -26,6 +26,7 @@ Route::post('/quiz/answer', [QuizController::class, 'submitAnswer'])->name('quiz
 Route::get('/quiz/result', [QuizController::class, 'result'])->name('quiz.result');
 
 Route::get('/quiz/history', [QuizController::class, 'history'])->name('quiz.history');
+Route::get('/quiz/my-quizzes', [QuizController::class, 'myQuizzes'])->name('quiz.my-quizzes');
 
 
 

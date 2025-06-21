@@ -57,8 +57,8 @@
             <span>Home</span>
         </a>
 
-        <a href="{{ route('quiz.history') }}"
-            class="flex flex-col items-center gap-1 {{ request()->is('quiz/history') ? 'text-indigo-500' : 'text-gray-400' }} transition duration-100 hover:text-gray-500 active:text-gray-600">
+        <a href="{{ route('quiz.my-quizzes') }}"
+            class="flex flex-col items-center gap-1 {{ request()->is('quiz/my-quizzes') ? 'text-indigo-500' : 'text-gray-400' }} transition duration-100 hover:text-gray-500 active:text-gray-600">
             <!-- History Icon -->
             <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10" />

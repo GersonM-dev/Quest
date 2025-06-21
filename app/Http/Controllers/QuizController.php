@@ -20,23 +20,33 @@ class QuizController extends Controller
             'level' => 'required|in:1,2,3,4',
             'test_type' => 'required|in:pretest,posttest',
         ]);
-        // Get 10 random questions for chosen level
+
+        // Get 10 random questions for chosen level & type
         $answeredQuestionIds = \App\Models\UserAnswer::where('user_id', auth()->id())->pluck('question_id')->toArray();
-        $questionsQuery = Question::with('answers')
+        $questionsQuery = \App\Models\Question::with('answers')
             ->where('level', $request->level)
             ->whereNotIn('id', $answeredQuestionIds);
 
-        // Add condition for pretest or posttest
         if ($request->test_type === 'pretest') {
             $questionsQuery->where('is_pretest', true);
-        } elseif ($request->test_type === 'posttest') {
+        } else {
             $questionsQuery->where('is_posttest', true);
         }
 
         $questions = $questionsQuery->inRandomOrder()->take(10)->get();
 
-        // Store questions and progress in session
+        // --- Create a new Quiz entry (status: in_progress)
+        $quiz = \App\Models\Quiz::create([
+            'user_id' => auth()->id(),
+            'total_points' => 0,
+            'level' => $request->level,
+            'status' => 'in_progress',
+            // add 'test_type' if you want (must add to fillable and migration)
+        ]);
+
+        // --- Store session
         Session::put('quiz', [
+            'quiz_id' => $quiz->id,
             'level' => $request->level,
             'test_type' => $request->test_type,
             'questions' => $questions->pluck('id')->toArray(),
@@ -48,6 +58,7 @@ class QuizController extends Controller
         return redirect()->route('quiz.question');
     }
 
+
     public function showQuestion()
     {
         $quiz = Session::get('quiz');
@@ -56,16 +67,17 @@ class QuizController extends Controller
         }
 
         $questionId = $quiz['questions'][$quiz['current']];
-        $question = Question::with('answers')->findOrFail($questionId);
+        $question = \App\Models\Question::with('answers')->findOrFail($questionId);
 
         return view('quiz.question', compact('question', 'quiz'));
     }
+
 
     public function submitAnswer(Request $request)
     {
         $quiz = Session::get('quiz');
         $questionId = $quiz['questions'][$quiz['current']];
-        $question = Question::with('answers')->findOrFail($questionId);
+        $question = \App\Models\Question::with('answers')->findOrFail($questionId);
 
         $isCorrect = $question->answers()
             ->where('id', $request->answer_id)
@@ -74,9 +86,10 @@ class QuizController extends Controller
 
         $point = $question->points;
 
-        // SAVE THE ANSWER
+        // Save user's answer
         \App\Models\UserAnswer::create([
             'user_id' => auth()->id(),
+            'quiz_id' => $quiz['quiz_id'],
             'question_id' => $question->id,
             'answer_id' => $request->answer_id,
             'is_correct' => $isCorrect,
@@ -108,6 +121,7 @@ class QuizController extends Controller
     }
 
 
+
     public function result()
     {
         $quiz = Session::get('quiz');
@@ -116,6 +130,15 @@ class QuizController extends Controller
         }
         $score = $quiz['score'];
         $userId = auth()->id(); // Make sure the user is logged in
+
+        // Update the quiz attempt with total_points and status
+        $quizModel = \App\Models\Quiz::find($quiz['quiz_id']);
+        if ($quizModel) {
+            $quizModel->update([
+                'total_points' => $score,
+                'status' => 'finished',
+            ]);
+        }
 
         // Update or create leaderboard
         \App\Models\Leaderboard::updateOrCreate(
@@ -138,5 +161,12 @@ class QuizController extends Controller
 
         return view('quiz.history', compact('answers'));
     }
+
+    public function myQuizzes()
+    {
+        $quizzes = \App\Models\Quiz::where('user_id', auth()->id())->orderByDesc('created_at')->get();
+        return view('quiz.my-quizzes', compact('quizzes'));
+    }
+
 
 }
