@@ -69,7 +69,10 @@ class QuizController extends Controller
         $questionId = $quiz['questions'][$quiz['current']];
         $question = \App\Models\Question::with('answers')->findOrFail($questionId);
 
-        return view('quiz.question', compact('question', 'quiz'));
+        // Per-question timer: Level 1–2 = 30s, Level 3–4 = 15s
+        $questionTime = in_array($quiz['level'], [1, 2]) ? 30 : 15;
+
+        return view('quiz.question', compact('question', 'quiz', 'questionTime'));
     }
 
 
@@ -79,19 +82,25 @@ class QuizController extends Controller
         $questionId = $quiz['questions'][$quiz['current']];
         $question = \App\Models\Question::with('answers')->findOrFail($questionId);
 
-        $isCorrect = $question->answers()
-            ->where('id', $request->answer_id)
-            ->where('is_correct', true)
-            ->exists();
+        $answerId = $request->answer_id ?? null;
+        $isCorrect = false;
+
+        // --- Step 4: Handle "no answer" (skipped) case ---
+        if ($answerId) {
+            $isCorrect = $question->answers()
+                ->where('id', $answerId)
+                ->where('is_correct', true)
+                ->exists();
+        }
 
         $point = $question->points;
 
-        // Save user's answer
+        // Save user's answer (can be null/skipped)
         \App\Models\UserAnswer::create([
             'user_id' => auth()->id(),
             'quiz_id' => $quiz['quiz_id'],
             'question_id' => $question->id,
-            'answer_id' => $request->answer_id,
+            'answer_id' => $answerId, // this can be null if skipped!
             'is_correct' => $isCorrect,
             'answered_at' => now(),
         ]);
@@ -107,9 +116,12 @@ class QuizController extends Controller
             $quiz['score'] -= $deduct;
             if ($quiz['score'] < 0)
                 $quiz['score'] = 0;
+            // --- Different message for skipped? ---
             $result = [
-                'status' => 'wrong',
-                'message' => 'Salah! -' . $deduct . ' poin'
+                'status' => $answerId ? 'wrong' : 'skipped',
+                'message' => $answerId
+                    ? ('Salah! -' . $deduct . ' poin')
+                    : ('Lewat/waktu habis! -' . $deduct . ' poin')
             ];
         }
 
@@ -119,6 +131,7 @@ class QuizController extends Controller
         // Return json for AJAX
         return response()->json($result);
     }
+
 
 
 

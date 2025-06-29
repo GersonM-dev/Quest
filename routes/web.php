@@ -31,6 +31,9 @@ Route::get('/quiz/my-quizzes', [QuizController::class, 'myQuizzes'])->name('quiz
 Route::get('/quiz/detail/{id}', [QuizController::class, 'quizDetail'])->name('quiz.detail');
 
 Route::get('/materi', [MateriController::class, 'index'])->name('materi.index');
+Route::get('/materi/view/{id}', [MateriController::class, 'view'])->name('materi.view');
+Route::post('/materi/timer/{id}', [MateriController::class, 'timer'])->name('materi.timer');
+
 
 
 
